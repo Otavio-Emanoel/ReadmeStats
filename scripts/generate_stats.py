@@ -12,7 +12,12 @@ import base64
 import urllib.request
 import urllib.error
 import json
+import re
 from typing import Optional
+
+# Constants
+API_TIMEOUT = 30  # Timeout in seconds for API requests
+MAX_REPOS_FOR_COMMITS = 10  # Limit repos checked for commits to improve performance
 
 
 def fetch_github_data(url: str, token: Optional[str] = None) -> dict:
@@ -26,7 +31,7 @@ def fetch_github_data(url: str, token: Optional[str] = None) -> dict:
 
     req = urllib.request.Request(url, headers=headers)
     try:
-        with urllib.request.urlopen(req, timeout=30) as response:
+        with urllib.request.urlopen(req, timeout=API_TIMEOUT) as response:
             return json.loads(response.read().decode("utf-8"))
     except urllib.error.HTTPError as e:
         print(f"HTTP Error {e.code}: {e.reason} for URL: {url}")
@@ -42,7 +47,7 @@ def fetch_avatar_base64(avatar_url: str) -> str:
         req = urllib.request.Request(
             avatar_url, headers={"User-Agent": "GitHub-Stats-Generator"}
         )
-        with urllib.request.urlopen(req, timeout=30) as response:
+        with urllib.request.urlopen(req, timeout=API_TIMEOUT) as response:
             image_data = response.read()
             return base64.b64encode(image_data).decode("utf-8")
     except Exception as e:
@@ -81,7 +86,7 @@ def get_user_stats(username: str, token: Optional[str] = None) -> dict:
 
     # Estimate commits (from repos)
     total_commits = 0
-    for repo in repos[:10]:  # Limit to first 10 repos for performance
+    for repo in repos[:MAX_REPOS_FOR_COMMITS]:
         try:
             commits_url = (
                 f"https://api.github.com/repos/{username}/"
@@ -95,13 +100,11 @@ def get_user_stats(username: str, token: Optional[str] = None) -> dict:
                     **({"Authorization": f"token {token}"} if token else {}),
                 },
             )
-            with urllib.request.urlopen(req, timeout=10) as response:
+            with urllib.request.urlopen(req, timeout=API_TIMEOUT) as response:
                 # Check Link header for total count
                 link_header = response.headers.get("Link", "")
                 if 'rel="last"' in link_header:
                     # Extract last page number
-                    import re
-
                     match = re.search(r"page=(\d+)>; rel=\"last\"", link_header)
                     if match:
                         total_commits += int(match.group(1))
@@ -180,21 +183,23 @@ def generate_svg(stats: dict) -> str:
     name = stats.get("name", stats.get("username", "User"))
     username = stats.get("username", "")
 
-    # Avatar section
-    avatar_section = ""
+    # Avatar clipPath definition (goes inside defs)
+    avatar_clip_def = ""
     if stats.get("avatar_base64"):
-        avatar_section = f'''
+        avatar_clip_def = '''
     <clipPath id="avatarClip">
       <circle cx="50" cy="50" r="40"/>
-    </clipPath>
-    <image
-      x="10"
-      y="10"
-      width="80"
-      height="80"
-      href="data:image/png;base64,{stats['avatar_base64']}"
-      clip-path="url(#avatarClip)"
-    />'''
+    </clipPath>'''
+
+    # Avatar image element (goes in the body)
+    avatar_base64 = stats.get("avatar_base64", "")
+    avatar_image = ""
+    if avatar_base64:
+        avatar_image = (
+            f'<image x="10" y="10" width="80" height="80" '
+            f'href="data:image/png;base64,{avatar_base64}" '
+            f'clip-path="url(#avatarClip)"/>'
+        )
 
     # Grade color
     grade_colors = {
@@ -214,8 +219,7 @@ def generate_svg(stats: dict) -> str:
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" style="stop-color:#0d1117;stop-opacity:1" />
       <stop offset="100%" style="stop-color:#161b22;stop-opacity:1" />
-    </linearGradient>
-    {avatar_section}
+    </linearGradient>{avatar_clip_def}
   </defs>
 
   <!-- Background -->
@@ -223,7 +227,7 @@ def generate_svg(stats: dict) -> str:
 
   <!-- Avatar -->
   <circle cx="50" cy="50" r="40" fill="#21262d"/>
-  {f'<image x="10" y="10" width="80" height="80" href="data:image/png;base64,{stats.get("avatar_base64", "")}" clip-path="url(#avatarClip)"/>' if stats.get("avatar_base64") else ""}
+  {avatar_image}
 
   <!-- Name and Username -->
   <text x="100" y="40" fill="#ffffff" font-family="Segoe UI, Ubuntu, sans-serif" font-size="18" font-weight="600">{name}</text>
