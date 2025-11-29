@@ -1,0 +1,56 @@
+name: Generate GitHub Stats SVG
+
+on:
+  schedule:
+    # Runs daily at 00:00 UTC
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+    # Allows manual trigger from GitHub Actions UI
+    inputs:
+      username:
+        description: 'GitHub username (optional, defaults to repository owner)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  generate-stats:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Generate Stats SVG
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_USERNAME: ${{ github.event.inputs.username || github.repository_owner }}
+          OUTPUT_PATH: docs/stats.svg
+        run: |
+          python scripts/generate_stats.py
+
+      - name: Check for changes
+        id: check_changes
+        run: |
+          git add docs/stats.svg
+          if git diff --cached --quiet; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "No changes detected in stats.svg"
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "Changes detected in stats.svg"
+          fi
+
+      - name: Commit and push changes
+        if: steps.check_changes.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -m "Update GitHub stats SVG [skip ci]"
+          git push
