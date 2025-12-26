@@ -29,7 +29,7 @@
     <!-- Row 1 -->
     <g transform="translate(0, 0)">
       <text fill="#8b949e" font-family="Segoe UI, Ubuntu, sans-serif" font-size="11">Repositories</text>
-      <text y="18" fill="#ffffff" font-family="Segoe UI, Ubuntu, sans-serif" font-size="16" font-weight="600">83</text>
+      <text y="18" fill="#ffffff" font-family="Segoe UI, Ubuntu, sans-serif" font-size="16" font-weight="600">86</text>
     </g>
     <g transform="translate(90, 0)">
       <text fill="#8b949e" font-family="Segoe UI, Ubuntu, sans-serif" font-size="11">Followers</text>
