@@ -29,11 +29,11 @@
     <!-- Row 1 -->
     <g transform="translate(0, 0)">
       <text fill="#8b949e" font-family="Segoe UI, Ubuntu, sans-serif" font-size="11">Repositories</text>
-      <text y="18" fill="#ffffff" font-family="Segoe UI, Ubuntu, sans-serif" font-size="16" font-weight="600">93</text>
+      <text y="18" fill="#ffffff" font-family="Segoe UI, Ubuntu, sans-serif" font-size="16" font-weight="600">94</text>
     </g>
     <g transform="translate(90, 0)">
       <text fill="#8b949e" font-family="Segoe UI, Ubuntu, sans-serif" font-size="11">Followers</text>
-      <text y="18" fill="#ffffff" font-family="Segoe UI, Ubuntu, sans-serif" font-size="16" font-weight="600">34</text>
+      <text y="18" fill="#ffffff" font-family="Segoe UI, Ubuntu, sans-serif" font-size="16" font-weight="600">33</text>
     </g>
     <g transform="translate(180, 0)">
       <text fill="#8b949e" font-family="Segoe UI, Ubuntu, sans-serif" font-size="11">Stars</text>
@@ -55,7 +55,7 @@
     </g>
     <g transform="translate(180, 50)">
       <text fill="#8b949e" font-family="Segoe UI, Ubuntu, sans-serif" font-size="11">Following</text>
-      <text y="18" fill="#ffffff" font-family="Segoe UI, Ubuntu, sans-serif" font-size="16" font-weight="600">24</text>
+      <text y="18" fill="#ffffff" font-family="Segoe UI, Ubuntu, sans-serif" font-size="16" font-weight="600">26</text>
     </g>
   </g>
 </svg>
